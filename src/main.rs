@@ -2,6 +2,8 @@
 //use reqwest;
 use std::path::PathBuf;
 use structopt::StructOpt;
+use serde::Deserialize;
+//use serde_json::Result;
 
 /// Report current weather conditions
 #[derive(StructOpt, Debug)]
@@ -24,13 +26,29 @@ struct Opt {
     key: String,
 }
 
+
+#[derive(Deserialize, Debug)]
+struct Conditions {
+    dt: u32,
+}
+
+#[derive(Deserialize, Debug)]
+struct Weather {
+    lat: f32,
+    lon: f32,
+    timezone: String,
+    timezone_offset: i32,
+    current: Conditions,
+}
+
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opt = Opt::from_args();
     println!("{:#?}", opt);
-    let url  = format!("https://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&appid={}", opt.lat, opt.lon, opt.key);
+    let url  = format!("https://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&appid={}&units=imperial&exclude=hourly,daily,minutely", opt.lat, opt.lon, opt.key);
     println!("{}", url);
-    let resp = reqwest::blocking::get(&url)?
-        .text()?;
+    //let resp = reqwest::blocking::get(&url)?.text()?;
+    let resp: Weather = reqwest::blocking::get(&url)?.json()?;
     println!("{:#?}", resp);
     Ok(())
 }
