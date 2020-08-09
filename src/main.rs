@@ -7,6 +7,7 @@ use structopt::StructOpt;
 use serde::Deserialize;
 //use serde_json::Result;
 //use chrono::Utc;
+use wreport::weather::Weather;
 
 /// Report current weather conditions
 #[derive(StructOpt, Debug)]
@@ -29,20 +30,6 @@ struct Opt {
     key: String,
 }
 
-
-#[derive(Deserialize, Debug)]
-struct Conditions {
-    dt: u32,
-}
-
-#[derive(Deserialize, Debug)]
-struct OneCall {
-    lat: f32,
-    lon: f32,
-    timezone: String,
-    timezone_offset: i32,
-    current: Conditions,
-}
 
 #[derive(Deserialize, Debug)]
 struct Location {
@@ -71,10 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("{:#?}", config);
 
-    let url  = format!("https://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&appid={}&units=imperial&exclude=hourly,daily,minutely", opt.lat, opt.lon, opt.key);
-    println!("{}", url);
-    //let resp = reqwest::blocking::get(&url)?.text()?;
-    let resp: OneCall = reqwest::blocking::get(&url)?.json()?;
-    println!("{:#?}", resp);
+    let weather = Weather::new(opt.lat, opt.lon, opt.key);
+    
     Ok(())
 }
